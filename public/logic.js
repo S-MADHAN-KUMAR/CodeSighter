@@ -3,7 +3,9 @@
 let OWNER='',REPO='',BRANCH='',FULL='';
 let FILES=[],STATS={},FUNCTIONS=[],DUPLICATES=[],AI_RESULT='',CHAT_HIST=[],CTAB='overview';
 const GH='https://api.github.com';
-const NV='/api/chat';
+const NV = '/api/chat';
+const BATCH_SIZE = 12; // Increased from 5 to speed up
+
 
 // HELPERS
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -95,7 +97,11 @@ async function run(){
   const btn=document.getElementById('abtn');
   if(btn) btn.disabled=true;
   sDisp('loading','flex');
-  prog(0,'Starting…');
+  sDisp('home','none');
+  sDisp('analyzer','flex');
+  prog(0,'Initializing Analysis…');
+  renderCenter();
+
 
   try{
     // Rate limit check
@@ -141,9 +147,10 @@ async function run(){
     prog(24,'Found '+flist.length+' files. Downloading…');
 
     // Download content — use raw.githubusercontent.com (no CORS issues)
-    const BATCH=5;
-    FILES=[];
+    FILES = [];
     const delay = (ms) => new Promise(res => setTimeout(res, ms));
+    const BATCH = BATCH_SIZE;
+
 
     for(let i=0;i<flist.length;i+=BATCH){
       const batch=flist.slice(i,i+BATCH);
@@ -159,17 +166,16 @@ async function run(){
       const pct=24+Math.round((Math.min(i+BATCH,flist.length)/flist.length)*36);
       prog(pct,'Reading files ('+Math.min(i+BATCH,flist.length)+'/'+flist.length+')…');
       lf(results.map(r=>'📄 '+r.path).join('\n'));
-      if(i+BATCH < flist.length) await delay(200); 
+      if(i+BATCH < flist.length) await delay(50); // Reduced delay for faster processing
     }
+
 
     prog(62,'Computing stats…');
     computeStats();
     renderFileTree();
 
-    // Show analyzer
     sDisp('loading','none');
-    sDisp('home','none');
-    sDisp('analyzer','flex');
+
     document.getElementById('rbar-url').textContent='github.com/'+FULL;
     setStatus('scan');
     renderCenter();

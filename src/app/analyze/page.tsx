@@ -131,10 +131,9 @@ function AnalyzeContent() {
           const width = lbarEl.style.width || '0%';
           setProgress(parseInt(width) || 0);
           setStatusText(lstatusEl.textContent || 'Initializing…');
-          analyzerEl.style.display = 'none';
-        } else {
-          analyzerEl.style.display = 'flex';
         }
+        analyzerEl.style.display = 'flex';
+
       }
     };
 

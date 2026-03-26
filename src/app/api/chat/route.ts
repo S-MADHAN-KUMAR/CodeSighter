@@ -4,7 +4,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await fetch(`${process.env.NV_BASE}/chat/completions`, {
+    const nvBase = (process.env.NV_BASE || '').trim().replace(/;$/, '');
+    const response = await fetch(`${nvBase}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
